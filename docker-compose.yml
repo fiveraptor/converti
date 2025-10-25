@@ -4,6 +4,7 @@ services:
     image: jorisbieg/converti-backend:latest
     environment:
       - CONVERTI_ALLOWED_ORIGINS=*
+      - CONVERTI_JOB_RETENTION_DAYS=7
     volumes:
       - backend_storage:/app/storage
     ports:

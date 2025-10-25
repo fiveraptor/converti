@@ -7,6 +7,8 @@ import shutil
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Iterable
+import threading
+import time
 
 from fastapi import (
     BackgroundTasks,
@@ -37,6 +39,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+settings.job_storage_dir.mkdir(parents=True, exist_ok=True)
 job_manager = JobManager()
 executor = ThreadPoolExecutor(max_workers=settings.max_concurrent_jobs)
 
@@ -139,6 +142,65 @@ def _process_job(job_id: str) -> None:
         # remove partial artifacts when everything failed
         output_dir = _output_directory(job_id)
         shutil.rmtree(output_dir, ignore_errors=True)
+
+
+def _delete_job_artifacts(job_id: str) -> None:
+    shutil.rmtree(_job_directory(job_id), ignore_errors=True)
+
+
+def cleanup_expired_jobs() -> None:
+    retention_days = max(0, settings.job_retention_days)
+    if retention_days <= 0:
+        return
+
+    settings.job_storage_dir.mkdir(parents=True, exist_ok=True)
+    cutoff = time.time() - retention_days * 86400
+    keep_ids: set[str] = set()
+
+    for job in list(job_manager.list_jobs()):
+        if job.created_at < cutoff:
+            logger.info("Removing expired job %s", job.job_id)
+            job_manager.delete_job(job.job_id)
+            _delete_job_artifacts(job.job_id)
+        else:
+            keep_ids.add(job.job_id)
+
+    for job_dir in settings.job_storage_dir.iterdir():
+        if not job_dir.is_dir():
+            continue
+        job_id = job_dir.name
+        if job_id in keep_ids:
+            continue
+        try:
+            mtime = job_dir.stat().st_mtime
+        except FileNotFoundError:
+            continue
+        if mtime < cutoff:
+            logger.info("Removing expired job directory %s", job_dir)
+            shutil.rmtree(job_dir, ignore_errors=True)
+
+
+def _retention_worker() -> None:
+    while True:
+        try:
+            cleanup_expired_jobs()
+        except Exception as exc:  # pragma: no cover
+            logger.exception("Job retention cleanup failed: %s", exc)
+        interval_hours = max(6, settings.job_retention_days)
+        time.sleep(interval_hours * 3600)
+
+
+_retention_thread: threading.Thread | None = None
+
+
+@app.on_event("startup")
+async def on_startup() -> None:
+    cleanup_expired_jobs()
+    if settings.job_retention_days > 0:
+        global _retention_thread
+        if _retention_thread is None or not _retention_thread.is_alive():
+            _retention_thread = threading.Thread(target=_retention_worker, daemon=True)
+            _retention_thread.start()
 
 
 @app.get(f"{settings.api_prefix}/health")

@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     allowed_origins: list[str] | str = ["*"]
     job_storage_dir: Path = Path("./storage/jobs").resolve()
     max_concurrent_jobs: int = 4
+    job_retention_days: int = 7
     model_config = SettingsConfigDict(env_prefix="CONVERTI_")
 
     @field_validator("allowed_origins", mode="after")
