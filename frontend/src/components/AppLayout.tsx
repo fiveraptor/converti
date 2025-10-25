@@ -1,5 +1,6 @@
-import { Link, useLocation } from "react-router-dom";
+
 import type { PropsWithChildren } from "react";
+import { Link, useLocation } from "react-router-dom";
 
 export const AppLayout = ({ children }: PropsWithChildren) => {
   const location = useLocation();
@@ -9,6 +10,7 @@ export const AppLayout = ({ children }: PropsWithChildren) => {
     <div className="app-shell">
       <header className="app-header">
         <Link to="/" className="brand">
+          <img src="/converti-logo.svg" alt="" className="brand-logo" />
           <span className="brand-mark">Converti</span>
         </Link>
         {showBack && (
@@ -24,4 +26,3 @@ export const AppLayout = ({ children }: PropsWithChildren) => {
     </div>
   );
 };
-

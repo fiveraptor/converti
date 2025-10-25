@@ -19,13 +19,8 @@ const CATEGORY_COPY: Record<
   },
   video: {
     title: "Video",
-    description: "Konvertiere Videos für jede Plattform, vom Handy bis 4K.",
+    description: "Konvertiere Videos fuer jede Plattform, vom Handy bis 4K.",
     accent: "linear-gradient(135deg, rgba(236,72,153,0.2), rgba(59,130,246,0.4))",
-  },
-  documents: {
-    title: "Dokumente",
-    description: "PDF, DOCX, Markdown – alles in wenigen Klicks.",
-    accent: "linear-gradient(135deg, rgba(249,115,22,0.2), rgba(59,130,246,0.4))",
   },
 };
 
@@ -39,8 +34,8 @@ export const HomePage = () => {
         <span className="badge">Allround File Converter</span>
         <h1>Dateien sekundenschnell umwandeln</h1>
         <p>
-          Converti unterstützt Bilder, Audio, Video und Dokumente – einfach hochladen, Zielformat
-          wählen und fertig. Keine Installation, moderne Oberfläche, volle Kontrolle.
+          Converti unterstuetzt Bilder, Audio und Video – einfach hochladen, Zielformat waehlen und
+          fertig. Keine Installation, moderne Oberflaeche, volle Kontrolle.
         </p>
       </section>
 

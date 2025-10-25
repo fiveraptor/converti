@@ -8,8 +8,6 @@ from typing import Iterable
 from .audio import SUPPORTED_FORMATS as AUDIO_FORMATS
 from .audio import AudioConverter
 from .base import ConversionError, Converter
-from .document import SUPPORTED_FORMATS as DOCUMENT_FORMATS
-from .document import DocumentConverter
 from .image import SUPPORTED_FORMATS as IMAGE_FORMATS
 from .image import ImageConverter
 from .video import SUPPORTED_FORMATS as VIDEO_FORMATS
@@ -19,14 +17,12 @@ _CONVERTERS: dict[str, Converter] = {
     "images": ImageConverter(),
     "audio": AudioConverter(),
     "video": VideoConverter(),
-    "documents": DocumentConverter(),
 }
 
 SUPPORTED_TARGETS: dict[str, list[str]] = {
     "images": sorted(IMAGE_FORMATS),
     "audio": sorted(AUDIO_FORMATS),
     "video": sorted(VIDEO_FORMATS),
-    "documents": sorted(DOCUMENT_FORMATS),
 }
 
 
@@ -54,4 +50,3 @@ def convert_file(category: str, source: Path, target: Path, target_format: str) 
             f"Conversion from {source.suffix} to {target_format} not supported",
         )
     return converter.convert(source, target, target_format)
-

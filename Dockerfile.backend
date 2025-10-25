@@ -1,4 +1,4 @@
-
+﻿
 FROM python:3.11-alpine AS runtime
 
 ENV PYTHONUNBUFFERED=1 \
@@ -8,10 +8,7 @@ ENV PYTHONUNBUFFERED=1 \
 WORKDIR /app
 
 RUN set -eux; \
-    apk add --no-cache \
-        ffmpeg \
-        pandoc-cli \
-        tectonic
+    apk add --no-cache ffmpeg
 
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt

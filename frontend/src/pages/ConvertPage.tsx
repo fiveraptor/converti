@@ -243,8 +243,6 @@ const titleByCategory = (category: string) => {
       return "Audio konvertieren";
     case "video":
       return "Videos konvertieren";
-    case "documents":
-      return "Dokumente konvertieren";
     default:
       return category;
   }

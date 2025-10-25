@@ -64,17 +64,15 @@ select {
   font-size: 1.2rem;
 }
 
-.brand-mark {
-  letter-spacing: 0.04em;
+.brand-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  box-shadow: 0 0 18px rgba(59, 130, 246, 0.35);
 }
 
-.brand::before {
-  content: "";
-  width: 32px;
-  height: 32px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--primary), var(--accent));
-  box-shadow: 0 0 18px rgba(59, 130, 246, 0.4);
+.brand-mark {
+  letter-spacing: 0.04em;
 }
 
 .back-link {

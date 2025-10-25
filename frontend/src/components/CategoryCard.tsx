@@ -8,6 +8,12 @@ interface CategoryCardProps {
   accent: string;
 }
 
+const ICON_MAP: Record<string, string> = {
+  images: "🖼️",
+  audio: "🎧",
+  video: "🎬",
+};
+
 export const CategoryCard = ({
   category,
   title,
@@ -18,7 +24,7 @@ export const CategoryCard = ({
   return (
     <Link to={`/convert/${category}`} className="category-card">
       <div className="category-icon" aria-hidden style={{ background: accent }}>
-        {categorySymbol(category)}
+        {ICON_MAP[category] ?? "📦"}
       </div>
       <div className="category-content">
         <h3>{title}</h3>
@@ -35,20 +41,5 @@ export const CategoryCard = ({
       <span className="category-cta">Konvertieren →</span>
     </Link>
   );
-};
-
-const categorySymbol = (category: string) => {
-  switch (category) {
-    case "images":
-      return "🖼️";
-    case "audio":
-      return "🎧";
-    case "video":
-      return "🎬";
-    case "documents":
-      return "📄";
-    default:
-      return "📦";
-  }
 };
 
