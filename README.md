@@ -90,3 +90,4 @@ Dev-Server: http://localhost:5173. Setze `VITE_API_BASE_URL`, wenn ein anderer A
 ### Lizenz
 
 MIT - nutze Converti gerne als Basis fuer eigene Projekte.
+![](screenshot_dashboard.png)
