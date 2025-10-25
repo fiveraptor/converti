@@ -1,15 +1,32 @@
 
-## Converti – Allround File Converter
+## Converti – Container Deployment
 
-Converti is a modern web application for converting media files – currently images, audio, and video. The backend is powered by FastAPI and provides job tracking, while the React/Vite frontend delivers a drag‑and‑drop workflow with progress monitoring and download management.
+Ready-made Docker images are available on Docker Hub:
 
-### Features
+- `jorisbieg/converti-frontend`
+- `jorisbieg/converti-backend`
 
-- Modern responsive UI with drag & drop uploads and real-time progress.
-- Supports multiple files per job and parallel conversion queueing.
-- Built-in browser history to revisit and download previous jobs.
-- Backend converts images via Pillow and audio/video via FFmpeg.
-- Ready-to-run Docker images for backend (uvicorn) and frontend (nginx).
+### Quick Start
+
+```bash
+docker compose up -d
+```
+
+- Frontend: http://localhost:8080
+- Backend API: http://localhost:8000/api
+
+Job data is persisted automatically in the named volume `backend_storage`.
+
+### Customize
+
+- Set `CONVERTI_ALLOWED_ORIGINS` to restrict CORS.
+- Override `CONVERTI_JOB_STORAGE_DIR` if you want a different on-disk location.
+
+---
+
+## For Developers
+
+Converti is built with FastAPI (backend) and React/Vite (frontend). It supports converting images (Pillow) and audio/video (FFmpeg), with drag-and-drop uploads, progress polling, and a browser-side job history.
 
 ### Project Structure
 
@@ -46,7 +63,7 @@ pip install -r backend/requirements.txt
 uvicorn app.main:app --app-dir backend --reload --port 8000
 ```
 
-The API is available at `http://localhost:8000/api` (Swagger UI at `/docs`). FFmpeg must be available on your PATH.
+The API is available at http://localhost:8000/api (Swagger UI at `/docs`). FFmpeg must be available on your PATH.
 
 #### Frontend
 
@@ -56,27 +73,12 @@ npm install
 npm run dev
 ```
 
-The dev server runs at `http://localhost:5173`. Use `VITE_API_BASE_URL` to point to a custom API endpoint.
+The Vite dev server runs at http://localhost:5173. Set `VITE_API_BASE_URL` to target a custom API endpoint.
 
-### Docker
+### Roadmap Ideas
 
-Published images:
-
-- `jorisbieg/converti-backend`
-- `jorisbieg/converti-frontend`
-
-To run both services:
-
-```bash
-docker compose up -d
-```
-
-Backend is exposed on `http://localhost:8000/api`, frontend on `http://localhost:8080`.
-
-### Ideas / Next Steps
-
-- WebSockets or Server-Sent Events for instant progress updates.
-- Additional converter modules (archives, documents, etc.).
+- Real-time progress via WebSockets/SSE.
+- Additional converters (archives, documents, etc.).
 - Authentication, user accounts, and persistent job storage.
 - Background worker queue for horizontal scaling.
 
