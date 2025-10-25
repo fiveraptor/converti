@@ -1,5 +1,7 @@
 ## Converti - Container Deployment
 
+![](images/screenshot_dashboard.png)
+
 ### Schritt 1: Repository klonen
 
 ```bash
@@ -23,7 +25,7 @@ Anpassungen nimmst du direkt in `docker-compose.yml` vor:
 - `ports:` - externe Ports aendern
 - `CONVERTI_ALLOWED_ORIGINS` - erlaubte Origins fuer CORS
 - `CONVERTI_JOB_RETENTION_DAYS` - automatische Aufraeumung alter Jobs (Standard 7 Tage)
-- `CONVERTI_JOB_STORAGE_DIR` - Pfad fuer temporare Dateien
+- `CONVERTI_JOB_STORAGE_DIR` - Pfad fuer temporaere Dateien
 
 Stoppen kannst du die Container mit `docker compose down`. Jobdaten bleiben im Volume `backend_storage` erhalten. Fuer Updates genuegen `docker compose pull` und danach `docker compose up -d`.
 
@@ -90,4 +92,3 @@ Dev-Server: http://localhost:5173. Setze `VITE_API_BASE_URL`, wenn ein anderer A
 ### Lizenz
 
 MIT - nutze Converti gerne als Basis fuer eigene Projekte.
-![](screenshot_dashboard.png)
