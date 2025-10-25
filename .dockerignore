@@ -1,0 +1,18 @@
+__pycache__/
+*.pyc
+.venv/
+
+# Backend artifacts
+backend/storage/
+
+# Frontend build artifacts and dependencies
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/dev*.log
+
+# IDE & misc
+.DS_Store
+.idea/
+.vscode/
+

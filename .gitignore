@@ -1,0 +1,26 @@
+# Node / frontend artifacts
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/*.log
+frontend/*.lock
+frontend/dev.out.log
+frontend/dev.err.log
+
+# Python / backend artifacts
+.venv/
+__pycache__/
+*.py[cod]
+storage/
+
+# Environment & config
+.env
+.env.*
+*.env.local
+
+# OS / Editor junk
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
