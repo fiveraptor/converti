@@ -1,11 +1,7 @@
 
-version: "3.9"
-
 services:
   backend:
-    build:
-      context: .
-      dockerfile: Dockerfile.backend
+    image: jorisbieg/converti-backend:latest
     environment:
       - CONVERTI_ALLOWED_ORIGINS=*
     volumes:
@@ -14,11 +10,7 @@ services:
       - "8000:8000"
 
   frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile.frontend
-      args:
-        VITE_API_BASE_URL: /api
+    image: jorisbieg/converti-frontend:latest
     depends_on:
       - backend
     ports:
