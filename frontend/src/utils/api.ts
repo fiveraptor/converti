@@ -85,4 +85,27 @@ export const api = {
     );
     return handleBlobResponse(response);
   },
+
+  async deleteJob(jobId: string): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/jobs/${jobId}`, {
+      method: "DELETE",
+      headers: jsonHeaders,
+    });
+    if (response.ok || response.status === 202 || response.status === 204) {
+      return;
+    }
+    if (response.status === 404) {
+      return;
+    }
+    try {
+      const data = await response.json();
+      if (typeof data.detail === "string") {
+        throw new Error(data.detail);
+      }
+    } catch {
+      // ignore parse errors
+    }
+    throw new Error(`HTTP ${response.status}`);
+  },
 };
+

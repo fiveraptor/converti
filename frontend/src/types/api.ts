@@ -1,4 +1,4 @@
-export type JobStatus = "pending" | "processing" | "completed" | "failed";
+export type JobStatus = "pending" | "processing" | "completed" | "failed" | "cancelled";
 
 export interface ConversionResult {
   sourceName: string;
@@ -27,3 +27,4 @@ export interface StoredJobMeta {
   targetFormat: string;
   addedAt: number;
 }
+

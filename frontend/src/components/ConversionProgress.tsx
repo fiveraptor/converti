@@ -16,6 +16,7 @@ export const ConversionProgress = ({
   if (!job) return null;
 
   const progressPercent = Math.round(job.progress * 100);
+  const showActivityDot = polling && (job.status === "pending" || job.status === "processing");
 
   return (
     <section className="conversion-status">
@@ -24,7 +25,7 @@ export const ConversionProgress = ({
           <h2>Status</h2>
           <p className="status-line">
             {translateStatus(job.status)}
-            {polling && job.status !== "completed" && <span className="status-dot" />}
+            {showActivityDot && <span className="status-dot" />}
           </p>
         </div>
         <div className="progress-bar">
@@ -69,11 +70,13 @@ const translateStatus = (status: ConversionJob["status"]) => {
     case "pending":
       return "Wartet auf Verarbeitung";
     case "processing":
-      return "Konvertierung läuft";
+      return "Konvertierung laeuft";
     case "completed":
       return "Abgeschlossen";
     case "failed":
       return "Fehlgeschlagen";
+    case "cancelled":
+      return "Abgebrochen";
     default:
       return status;
   }
@@ -87,8 +90,10 @@ const renderSubtitle = (result: ConversionResult) => {
     return "Bereit zum Download";
   }
   if (result.status === "processing") {
-    return "Wird verarbeitet…";
+    return "Wird verarbeitet...";
+  }
+  if (result.status === "cancelled") {
+    return "Abgebrochen";
   }
   return "Steht in der Warteschlange";
 };
-

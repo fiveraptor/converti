@@ -107,9 +107,19 @@ def _process_job(job_id: str) -> None:
         logger.warning("Job %s vanished before processing", job_id)
         return
 
+    if job.status is JobStatus.CANCELLED:
+        logger.info("Job %s cancelled before start", job_id)
+        _delete_job_artifacts(job_id)
+        job_manager.delete_job(job_id)
+        return
+
     job_manager.update_job(job_id, status=JobStatus.PROCESSING, error=None)
     failures = 0
     for result in job.results:
+        if job.status is JobStatus.CANCELLED:
+            logger.info("Job %s cancelled during processing", job_id)
+            break
+
         output_path = result.output_path
         output_path.parent.mkdir(parents=True, exist_ok=True)
         try:
@@ -133,15 +143,25 @@ def _process_job(job_id: str) -> None:
         finally:
             job_manager.increment_processed(job_id)
 
+    if job.status is JobStatus.CANCELLED:
+        for result in job.results:
+            if result.status in (JobStatus.PENDING, JobStatus.PROCESSING):
+                result.status = JobStatus.CANCELLED
+                result.error = "Cancelled"
+        job.error = job.error or "Cancelled by user"
+        _delete_job_artifacts(job_id)
+        job_manager.delete_job(job_id)
+        return
+
     final_status = JobStatus.COMPLETED if failures == 0 else JobStatus.FAILED
     error = None
     if failures:
         error = f"{failures} file(s) failed during conversion"
     job_manager.update_job(job_id, status=final_status, error=error)
     if final_status is JobStatus.FAILED and failures == len(job.results):
-        # remove partial artifacts when everything failed
         output_dir = _output_directory(job_id)
         shutil.rmtree(output_dir, ignore_errors=True)
+
 
 
 def _delete_job_artifacts(job_id: str) -> None:
@@ -157,13 +177,13 @@ def cleanup_expired_jobs() -> None:
     cutoff = time.time() - retention_days * 86400
     keep_ids: set[str] = set()
 
-    for job in list(job_manager.list_jobs()):
-        if job.created_at < cutoff:
-            logger.info("Removing expired job %s", job.job_id)
-            job_manager.delete_job(job.job_id)
-            _delete_job_artifacts(job.job_id)
+    for existing_job in list(job_manager.list_jobs()):
+        if existing_job.created_at < cutoff:
+            logger.info("Removing expired job %s", existing_job.job_id)
+            job_manager.delete_job(existing_job.job_id)
+            _delete_job_artifacts(existing_job.job_id)
         else:
-            keep_ids.add(job.job_id)
+            keep_ids.add(existing_job.job_id)
 
     for job_dir in settings.job_storage_dir.iterdir():
         if not job_dir.is_dir():
@@ -188,21 +208,12 @@ def _retention_worker() -> None:
             logger.exception("Job retention cleanup failed: %s", exc)
         interval_hours = max(6, settings.job_retention_days)
         time.sleep(interval_hours * 3600)
-
-
-_retention_thread: threading.Thread | None = None
-
-
 @app.on_event("startup")
 async def on_startup() -> None:
     cleanup_expired_jobs()
     if settings.job_retention_days > 0:
-        global _retention_thread
-        if _retention_thread is None or not _retention_thread.is_alive():
-            _retention_thread = threading.Thread(target=_retention_worker, daemon=True)
-            _retention_thread.start()
-
-
+        thread = threading.Thread(target=_retention_worker, daemon=True)
+        thread.start()
 @app.get(f"{settings.api_prefix}/health")
 async def health_check() -> dict[str, str]:
     return {"status": "ok"}
@@ -347,6 +358,14 @@ async def delete_job(job_id: str):
     if job is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
 
-    shutil.rmtree(_job_directory(job_id), ignore_errors=True)
-    job_manager.delete_job(job_id)
-    return {"deleted": True}
+    if job.status in (JobStatus.COMPLETED, JobStatus.FAILED, JobStatus.CANCELLED):
+        _delete_job_artifacts(job_id)
+        job_manager.delete_job(job_id)
+        return {"deleted": True}
+
+    job_manager.cancel_job(job_id, "Cancelled by user")
+    return JSONResponse(status_code=status.HTTP_202_ACCEPTED, content={"cancelled": True})
+
+
+
+

@@ -18,6 +18,7 @@ class JobStatus(str, Enum):
     PROCESSING = "processing"
     COMPLETED = "completed"
     FAILED = "failed"
+    CANCELLED = "cancelled"
 
 
 @dataclass
@@ -102,3 +103,11 @@ class JobManager:
     def list_jobs(self) -> list[ConversionJob]:
         with self._lock:
             return list(self._jobs.values())
+
+    def cancel_job(self, job_id: str, message: str | None = None) -> ConversionJob:
+        with self._lock:
+            job = self._jobs[job_id]
+            job.status = JobStatus.CANCELLED
+            if message:
+                job.error = message
+            return job

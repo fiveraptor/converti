@@ -18,6 +18,8 @@ const statusLabel = (status: string) => {
       return "Fehlgeschlagen";
     case "pending":
       return "Wartend";
+    case "cancelled":
+      return "Abgebrochen";
     default:
       return status;
   }
@@ -43,6 +45,22 @@ export const JobHistory = ({ history, onError }: JobHistoryProps) => {
     } finally {
       setBusyJob(null);
     }
+  };
+
+  const handleRemove = async (item: JobHistoryItem) => {
+    const { jobId } = item.meta;
+    try {
+      setBusyJob(jobId);
+      await api.deleteJob(jobId);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Aktion fehlgeschlagen";
+      onError?.(message);
+      setBusyJob(null);
+      return;
+    }
+    history.forgetJob(jobId);
+    setBusyJob(null);
   };
 
   const hasItems = history.items.length > 0;
@@ -84,82 +102,84 @@ export const JobHistory = ({ history, onError }: JobHistoryProps) => {
       </header>
 
       {history.loading && !hasItems ? (
-        <p className="muted-text">Lade Verlauf…</p>
+        <p className="muted-text">Lade Verlauf...</p>
       ) : !hasItems ? (
-        <p className="muted-text">
-          Noch keine abgeschlossenen Konvertierungen vorhanden.
-        </p>
+        <p className="muted-text">Noch keine Konvertierungen vorhanden.</p>
       ) : (
         <ul className="history-list">
-          {history.items.map((item) => (
-            <li key={item.meta.jobId} className={`history-item ${item.job?.status ?? ""}`}>
-              <div className="history-primary">
-                <div className="history-title">
-                  <strong>{item.meta.category.toUpperCase()}</strong>
-                  <span className="history-jobid">Job-ID: {item.meta.jobId}</span>
-                </div>
-                <div className="history-meta">
-                  <span>Ziel: {item.meta.targetFormat.toUpperCase()}</span>
-                  <span>
-                    Gestartet:{" "}
-                    {new Date(item.meta.addedAt).toLocaleString(undefined, {
-                      dateStyle: "short",
-                      timeStyle: "short",
-                    })}
-                  </span>
-                </div>
-                {item.job ? (
-                  <div className="history-status">
-                    <span className={`status-tag ${item.job.status}`}>
-                      {statusLabel(item.job.status)}
-                    </span>
-                    <div className="history-progress">
-                      <div
-                        className="history-progress-bar"
-                        style={{ width: `${progressFromJob(item)}%` }}
-                      />
-                    </div>
-                    <span className="history-progress-value">
-                      {progressFromJob(item)}%
-                    </span>
-                  </div>
-                ) : (
-                  item.error && <p className="error-text">{item.error}</p>
-                )}
+          {history.items.map((item) => {
+            const jobStatus = item.job?.status ?? "unknown";
+            const isActive = jobStatus === "pending" || jobStatus === "processing";
+            const removeLabel = isActive ? "Abbrechen" : "Entfernen";
 
-                {item.job?.status === "completed" && (
-                  <div className="history-results">
-                    <p>
-                      {item.job.results.filter((result) => result.status === "completed").length}{" "}
-                      Dateien konvertiert.
-                    </p>
+            return (
+              <li key={item.meta.jobId} className={`history-item ${jobStatus}`}>
+                <div className="history-primary">
+                  <div className="history-title">
+                    <strong>{item.meta.category.toUpperCase()}</strong>
+                    <span className="history-jobid">Job-ID: {item.meta.jobId}</span>
                   </div>
-                )}
-              </div>
-              <div className="history-actions-column">
-                {item.job?.status === "completed" && (
+                  <div className="history-meta">
+                    <span>Ziel: {item.meta.targetFormat.toUpperCase()}</span>
+                    <span>
+                      Gestartet:{" "}
+                      {new Date(item.meta.addedAt).toLocaleString(undefined, {
+                        dateStyle: "short",
+                        timeStyle: "short",
+                      })}
+                    </span>
+                  </div>
+                  {item.job ? (
+                    <div className="history-status">
+                      <span className={`status-tag ${item.job.status}`}>{statusLabel(item.job.status)}</span>
+                      <div className="history-progress">
+                        <div
+                          className="history-progress-bar"
+                          style={{ width: `${progressFromJob(item)}%` }}
+                        />
+                      </div>
+                      <span className="history-progress-value">
+                        {progressFromJob(item)}%
+                      </span>
+                    </div>
+                  ) : (
+                    item.error && <p className="error-text">{item.error}</p>
+                  )}
+
+                  {item.job?.status === "completed" && (
+                    <div className="history-results">
+                      <p>
+                        {item.job.results.filter((result) => result.status === "completed").length}{" "}
+                        Dateien konvertiert.
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <div className="history-actions-column">
+                  {item.job?.status === "completed" && (
+                    <button
+                      type="button"
+                      className="primary-button"
+                      onClick={() => handleDownloadAll(item.meta.jobId, item.meta.category)}
+                      disabled={busyJob === item.meta.jobId}
+                    >
+                      Alle herunterladen
+                    </button>
+                  )}
                   <button
                     type="button"
-                    className="primary-button"
-                    onClick={() => handleDownloadAll(item.meta.jobId, item.meta.category)}
+                    className="link-button"
+                    onClick={() => handleRemove(item)}
                     disabled={busyJob === item.meta.jobId}
                   >
-                    Alle herunterladen
+                    {removeLabel}
                   </button>
-                )}
-                <button
-                  type="button"
-                  className="link-button"
-                  onClick={() => history.forgetJob(item.meta.jobId)}
-                >
-                  Entfernen
-                </button>
-              </div>
-            </li>
-          ))}
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>
   );
 };
-
