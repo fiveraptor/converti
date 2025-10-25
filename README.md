@@ -1,58 +1,64 @@
+## Converti – Container Deployment
 
-## Converti â€“ Container Deployment
+### Schritt 1: Repository klonen
 
-Ready-made Docker images are available on Docker Hub:
+```bash
+git clone https://github.com/fiveraptor/converti.git
+cd converti
+```
 
-- `jorisbieg/converti-frontend`
-- `jorisbieg/converti-backend`
-
-### Quick Start
+### Schritt 2: Docker Compose ausführen
 
 ```bash
 docker compose up -d
 ```
 
+Standardmäßig startet die App auf diesen Ports:
+
 - Frontend: http://localhost:8080
 - Backend API: http://localhost:8000/api
 
-Job data is persisted automatically in the named volume `backend_storage`.
+Du kannst die Port-Mappings im `docker-compose.yml` unter `ports:` anpassen. Ebenso lassen sich Umgebungsvariablen wie `CONVERTI_ALLOWED_ORIGINS` oder `CONVERTI_JOB_STORAGE_DIR` überschreiben.
 
-### Customize
+Zum Stoppen:
 
-- Set `CONVERTI_ALLOWED_ORIGINS` to restrict CORS.
-- Override `CONVERTI_JOB_STORAGE_DIR` if you want a different on-disk location.
+```bash
+docker compose down
+```
+
+Job-Daten bleiben im Volume `backend_storage` persistent. Bei Updates reicht ein `docker compose pull` und `docker compose up -d`.
 
 ---
 
-## For Developers
+## Für Entwickler
 
-Converti is built with FastAPI (backend) and React/Vite (frontend). It supports converting images (Pillow) and audio/video (FFmpeg), with drag-and-drop uploads, progress polling, and a browser-side job history.
+Converti ist eine FastAPI/React-Anwendung. Unterstützte Konvertierungen: Bilder (Pillow) sowie Audio/Video (FFmpeg). Der Browser speichert eine Historie laufender und abgeschlossener Jobs.
 
-### Project Structure
+### Projektstruktur
 
 ```
 converti/
-â”œâ”€ backend/
-â”‚  â”œâ”€ app/
-â”‚  â”‚  â”œâ”€ converters/      # Image & media converter implementations
-â”‚  â”‚  â”œâ”€ config.py        # Settings via Pydantic
-â”‚  â”‚  â”œâ”€ jobs.py          # In-memory job tracking
-â”‚  â”‚  â””â”€ main.py          # FastAPI entrypoint
-â”‚  â””â”€ requirements.txt
-â”œâ”€ frontend/
-â”‚  â”œâ”€ src/
-â”‚  â”‚  â”œâ”€ components/      # UI building blocks
-â”‚  â”‚  â”œâ”€ pages/           # Home & convert workflow
-â”‚  â”‚  â”œâ”€ hooks/           # API + history hooks
-â”‚  â”‚  â””â”€ styles/          # Global styling
-â”‚  â”œâ”€ package.json
-â”‚  â””â”€ nginx.conf
-â”œâ”€ Dockerfile.backend
-â”œâ”€ Dockerfile.frontend
-â””â”€ docker-compose.yml
++- backend/
+¦  +- app/
+¦  ¦  +- converters/
+¦  ¦  +- config.py
+¦  ¦  +- jobs.py
+¦  ¦  +- main.py
+¦  +- requirements.txt
++- frontend/
+¦  +- src/
+¦  ¦  +- components/
+¦  ¦  +- pages/
+¦  ¦  +- hooks/
+¦  ¦  +- styles/
+¦  +- package.json
+¦  +- nginx.conf
++- Dockerfile.backend
++- Dockerfile.frontend
++- docker-compose.yml
 ```
 
-### Local Development
+### Lokale Entwicklung
 
 #### Backend
 
@@ -63,7 +69,7 @@ pip install -r backend/requirements.txt
 uvicorn app.main:app --app-dir backend --reload --port 8000
 ```
 
-The API is available at http://localhost:8000/api (Swagger UI at `/docs`). FFmpeg must be available on your PATH.
+API: http://localhost:8000/api (Swagger unter `/docs`). FFmpeg muss lokal verfügbar sein.
 
 #### Frontend
 
@@ -73,15 +79,15 @@ npm install
 npm run dev
 ```
 
-The Vite dev server runs at http://localhost:5173. Set `VITE_API_BASE_URL` to target a custom API endpoint.
+Dev-Server: http://localhost:5173. Setze `VITE_API_BASE_URL`, wenn du einen anderen API-Endpunkt nutzen möchtest.
 
-### Roadmap Ideas
+### Roadmap-Ideen
 
-- Real-time progress via WebSockets/SSE.
-- Additional converters (archives, documents, etc.).
-- Authentication, user accounts, and persistent job storage.
-- Background worker queue for horizontal scaling.
+- Echtzeit-Progress via WebSockets/SSE
+- Zusätzliche Converter (Archive, Dokumente ...)
+- Authentifizierung & persistente Job-Datenbank
+- Worker-Queue für Skalierung
 
-### License
+### Lizenz
 
-MIT â€“ feel free to use Converti as a starting point for your own projects.
+MIT – nutze Converti gerne als Basis für eigene Projekte.
