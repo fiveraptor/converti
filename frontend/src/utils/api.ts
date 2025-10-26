@@ -1,4 +1,4 @@
-import type { CategoryMap, ConversionJob } from "../types/api";
+import type { CategoryMap, ConversionJob, UploadProgressPayload } from "../types/api";
 
 const rawBase = import.meta.env.VITE_API_BASE_URL ?? "/api";
 const API_BASE_URL = rawBase.replace(/\/$/, "");
@@ -53,18 +53,94 @@ export const api = {
     category: string,
     targetFormat: string,
     files: File[],
+    options?: {
+      onProgress?: (payload: UploadProgressPayload) => void;
+      signal?: AbortSignal;
+    },
   ): Promise<string> {
     const formData = new FormData();
     formData.append("category", category);
     formData.append("target_format", targetFormat);
     files.forEach((file) => formData.append("files", file, file.name));
 
-    const response = await fetch(`${API_BASE_URL}/convert`, {
-      method: "POST",
-      body: formData,
+    const totalBytes = files.reduce((sum, file) => sum + file.size, 0);
+
+    return await new Promise<string>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      const startTime = performance.now();
+
+      const cleanup = () => {
+        xhr.upload.onprogress = null;
+        xhr.onload = null;
+        xhr.onerror = null;
+        xhr.onabort = null;
+      };
+
+      xhr.open("POST", `${API_BASE_URL}/convert`);
+
+      xhr.upload.onprogress = (event: ProgressEvent<EventTarget>) => {
+        if (!options?.onProgress) return;
+        const elapsedMs = performance.now() - startTime;
+        const total = event.lengthComputable ? event.total : totalBytes;
+        options.onProgress({
+          loaded: event.loaded,
+          total: total || totalBytes,
+          elapsedMs,
+        });
+      };
+
+      xhr.onload = () => {
+        cleanup();
+        const status = xhr.status;
+        const responseText = xhr.responseText;
+        if (status >= 200 && status < 300) {
+          try {
+            const data =
+              responseText.length > 0 ? (JSON.parse(responseText) as { jobId: string }) : null;
+            if (!data?.jobId) {
+              reject(new Error("Serverantwort ungueltig"));
+              return;
+            }
+            resolve(data.jobId);
+          } catch (error) {
+            reject(error instanceof Error ? error : new Error("JSON konnte nicht geparst werden"));
+          }
+        } else {
+          try {
+            const parsed = responseText ? JSON.parse(responseText) : null;
+            if (parsed?.detail) {
+              reject(new Error(parsed.detail));
+            } else {
+              reject(new Error(`HTTP ${status}`));
+            }
+          } catch {
+            reject(new Error(`HTTP ${status}`));
+          }
+        }
+      };
+
+      xhr.onerror = () => {
+        cleanup();
+        reject(new Error("Upload fehlgeschlagen"));
+      };
+
+      xhr.onabort = () => {
+        cleanup();
+        reject(new Error("Upload abgebrochen"));
+      };
+
+      if (options?.signal) {
+        if (options.signal.aborted) {
+          xhr.abort();
+          return;
+        }
+        options.signal.addEventListener("abort", () => {
+          xhr.abort();
+        });
+      }
+
+      xhr.send(formData);
     });
-    const data = await handleJsonResponse<{ jobId: string }>(response);
-    return data.jobId;
   },
 
   async fetchJob(jobId: string): Promise<ConversionJob> {

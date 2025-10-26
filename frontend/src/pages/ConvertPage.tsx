@@ -4,11 +4,27 @@ import { ConversionProgress } from "../components/ConversionProgress";
 import { FileDropzone } from "../components/FileDropzone";
 import { JobHistory } from "../components/JobHistory";
 import { SelectedFileList } from "../components/SelectedFileList";
+import { UploadProgress } from "../components/UploadProgress";
 import { useCategories } from "../hooks/useCategories";
 import { useJobHistory } from "../hooks/useJobHistory";
+import { useNavigationGuard } from "../hooks/useNavigationGuard";
 import { api } from "../utils/api";
 import { triggerDownload } from "../utils/download";
 import type { ConversionJob } from "../types/api";
+
+type UploadState = {
+  active: boolean;
+  loaded: number;
+  total: number;
+  speedBps: number;
+};
+
+const initialUploadState: UploadState = {
+  active: false,
+  loaded: 0,
+  total: 0,
+  speedBps: 0,
+};
 
 export const ConvertPage = () => {
   const { category } = useParams<{ category: string }>();
@@ -16,6 +32,7 @@ export const ConvertPage = () => {
   const { categories, loading, error: categoryError } = useCategories();
   const history = useJobHistory();
   const { trackJob } = history;
+  const { setGuardMessage } = useNavigationGuard();
 
   const [files, setFiles] = useState<File[]>([]);
   const [targetFormat, setTargetFormat] = useState<string>("");
@@ -24,6 +41,7 @@ export const ConvertPage = () => {
   const [polling, setPolling] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userError, setUserError] = useState<string | null>(null);
+  const [uploadState, setUploadState] = useState<UploadState>(initialUploadState);
 
   const formats = useMemo(() => {
     if (!category || !categories) return [];
@@ -85,6 +103,17 @@ export const ConvertPage = () => {
     }
   }, [job, trackJob]);
 
+  useEffect(() => {
+    if (uploadState.active) {
+      setGuardMessage("Aktuell laeuft noch ein Upload. Wirklich verlassen?");
+    } else {
+      setGuardMessage(null);
+    }
+    return () => {
+      setGuardMessage(null);
+    };
+  }, [uploadState.active, setGuardMessage]);
+
   const addFiles = (newFiles: File[]) => {
     setUserError(null);
     setFiles((prev) => {
@@ -121,13 +150,33 @@ export const ConvertPage = () => {
       return;
     }
 
+    const totalBytes = files.reduce((sum, file) => sum + file.size, 0);
     setIsSubmitting(true);
+    setUploadState({
+      active: true,
+      loaded: 0,
+      total: totalBytes,
+      speedBps: 0,
+    });
     setUserError(null);
     setJob(null);
     setJobId(null);
 
+    const requestStart = performance.now();
+
     try {
-      const id = await api.startConversion(category, targetFormat, files);
+      const id = await api.startConversion(category, targetFormat, files, {
+        onProgress: ({ loaded, total, elapsedMs }) => {
+          const elapsed = elapsedMs > 0 ? elapsedMs : performance.now() - requestStart;
+          const seconds = elapsed > 0 ? elapsed / 1000 : 0;
+          setUploadState((prev) => ({
+            active: true,
+            loaded,
+            total: total || prev.total || totalBytes,
+            speedBps: seconds > 0 ? loaded / seconds : 0,
+          }));
+        },
+      });
       setJobId(id);
       const initialJob = await api.fetchJob(id);
       setJob(initialJob);
@@ -135,6 +184,12 @@ export const ConvertPage = () => {
       setUserError(err instanceof Error ? err.message : "Konvertierung fehlgeschlagen");
     } finally {
       setIsSubmitting(false);
+      setUploadState((prev) => ({
+        active: false,
+        loaded: prev.total || prev.loaded,
+        total: prev.total,
+        speedBps: 0,
+      }));
     }
   };
 
@@ -170,6 +225,8 @@ export const ConvertPage = () => {
     return <p>Diese Kategorie ist aktuell nicht verfuegbar.</p>;
   }
 
+  const busy = isSubmitting || polling || uploadState.active;
+
   return (
     <div className="convert-page">
       <header className="convert-header">
@@ -186,7 +243,7 @@ export const ConvertPage = () => {
           <select
             value={targetFormat}
             onChange={(event) => setTargetFormat(event.target.value)}
-            disabled={isSubmitting || polling}
+            disabled={busy}
           >
             {formats.map((format) => (
               <option value={format} key={format}>
@@ -196,18 +253,21 @@ export const ConvertPage = () => {
           </select>
         </label>
 
-        <FileDropzone onFilesAdded={addFiles} disabled={isSubmitting || polling} />
+        <FileDropzone onFilesAdded={addFiles} disabled={busy} />
 
         <SelectedFileList files={files} onRemove={removeFile} />
+
+        <UploadProgress
+          active={uploadState.active}
+          loaded={uploadState.loaded}
+          total={uploadState.total}
+          speedBps={uploadState.speedBps}
+        />
 
         {userError && <p className="error-text">{userError}</p>}
 
         <div className="form-actions">
-          <button
-            className="primary-button"
-            type="submit"
-            disabled={isSubmitting || polling || !files.length}
-          >
+          <button className="primary-button" type="submit" disabled={busy || !files.length}>
             {isSubmitting ? "Startet..." : "Konvertierung starten"}
           </button>
           {files.length > 0 && (
@@ -215,7 +275,7 @@ export const ConvertPage = () => {
               className="secondary-button"
               type="button"
               onClick={() => setFiles([])}
-              disabled={isSubmitting || polling}
+              disabled={busy}
             >
               Auswahl zuruecksetzen
             </button>

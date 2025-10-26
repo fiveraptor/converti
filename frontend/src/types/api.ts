@@ -28,3 +28,9 @@ export interface StoredJobMeta {
   addedAt: number;
 }
 
+export interface UploadProgressPayload {
+  loaded: number;
+  total: number;
+  elapsedMs: number;
+}
+
