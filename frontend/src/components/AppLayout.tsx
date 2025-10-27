@@ -45,18 +45,18 @@ export const AppLayout = ({ children }: PropsWithChildren) => {
       <div className="app-shell">
         <header className="app-header">
           <Link to="/" className="brand" onClick={handleGuardedNavigation}>
-            <img src="/converti-logo.svg" alt="" className="brand-logo" />
+            <img src="/converti-logo.svg" alt="Converti logo" className="brand-logo" />
             <span className="brand-mark">Converti</span>
           </Link>
           {showBack && (
             <Link to="/" className="back-link" onClick={handleGuardedNavigation}>
-              &lt;- Zurueck
+              &lt;- Back
             </Link>
           )}
         </header>
         <main className="app-main">{children}</main>
         <footer className="app-footer">
-          <p>Copyright {new Date().getFullYear()} Converti. Dateien einfach konvertieren.</p>
+          <p>Copyright {new Date().getFullYear()} Converti. Convert files with ease.</p>
         </footer>
       </div>
     </NavigationGuardContext.Provider>

@@ -66,11 +66,11 @@ export const FileDropzone = ({ onFilesAdded, accept, disabled }: FileDropzonePro
         }}
       >
         <div className="dropzone-inner">
-          <p className="dropzone-title">Dateien hier ablegen oder klicken</p>
+          <p className="dropzone-title">Drop files here or click to browse</p>
           <p className="dropzone-subtitle">
-            Unterstützt mehrere Dateien gleichzeitig · Größe begrenzt durch Server-Konfiguration
+            Upload multiple files at once. Maximum size is limited by the server configuration.
           </p>
-          <span className="dropzone-hint">Drag & Drop</span>
+          <span className="dropzone-hint">Drag and drop</span>
         </div>
       </div>
       <input
@@ -85,4 +85,3 @@ export const FileDropzone = ({ onFilesAdded, accept, disabled }: FileDropzonePro
     </>
   );
 };
-

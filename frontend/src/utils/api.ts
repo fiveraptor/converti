@@ -98,12 +98,12 @@ export const api = {
             const data =
               responseText.length > 0 ? (JSON.parse(responseText) as { jobId: string }) : null;
             if (!data?.jobId) {
-              reject(new Error("Serverantwort ungueltig"));
+              reject(new Error("Unexpected server response"));
               return;
             }
             resolve(data.jobId);
           } catch (error) {
-            reject(error instanceof Error ? error : new Error("JSON konnte nicht geparst werden"));
+            reject(error instanceof Error ? error : new Error("Failed to parse server response"));
           }
         } else {
           try {
@@ -121,12 +121,12 @@ export const api = {
 
       xhr.onerror = () => {
         cleanup();
-        reject(new Error("Upload fehlgeschlagen"));
+        reject(new Error("Upload failed"));
       };
 
       xhr.onabort = () => {
         cleanup();
-        reject(new Error("Upload abgebrochen"));
+        reject(new Error("Upload aborted"));
       };
 
       if (options?.signal) {

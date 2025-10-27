@@ -7,7 +7,7 @@ export const SelectedFileList = ({ files, onRemove }: SelectedFileListProps) => 
   if (!files.length) {
     return (
       <p className="empty-info">
-        Noch keine Dateien ausgewählt. Du kannst Dateien per Drag & Drop hinzufügen.
+        No files selected yet. Drag and drop files here or use the picker above.
       </p>
     );
   }
@@ -21,7 +21,7 @@ export const SelectedFileList = ({ files, onRemove }: SelectedFileListProps) => 
             <span>{formatFileSize(file.size)}</span>
           </div>
           <button type="button" className="link-button" onClick={() => onRemove(file)}>
-            Entfernen
+            Remove
           </button>
         </li>
       ))}
@@ -36,4 +36,3 @@ const formatFileSize = (bytes: number) => {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
 };
-

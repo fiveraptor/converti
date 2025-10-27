@@ -36,9 +36,9 @@ export const UploadProgress = ({ active, loaded, total, speedBps }: UploadProgre
   return (
     <div className="upload-progress">
       <div className="upload-progress-header">
-        <span>Upload läuft...</span>
+        <span>Uploading...</span>
         <span>
-          {percent}% · {formatBytes(loaded)} von {formatBytes(total || loaded)}
+          {percent}% · {formatBytes(loaded)} of {formatBytes(total || loaded)}
         </span>
       </div>
       <div className="upload-progress-bar">
@@ -48,7 +48,7 @@ export const UploadProgress = ({ active, loaded, total, speedBps }: UploadProgre
         />
       </div>
       <div className="upload-progress-meta">
-        <span>Aktuelle Geschwindigkeit: {formatSpeed(speedBps)}</span>
+        <span>Current speed: {formatSpeed(speedBps)}</span>
       </div>
     </div>
   );

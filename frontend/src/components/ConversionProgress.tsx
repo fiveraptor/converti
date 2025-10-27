@@ -58,7 +58,7 @@ export const ConversionProgress = ({
 
       {job.status === "completed" && (
         <button type="button" className="primary-button" onClick={onDownloadAll}>
-          Alle Dateien herunterladen
+          Download all files
         </button>
       )}
     </section>
@@ -68,15 +68,15 @@ export const ConversionProgress = ({
 const translateStatus = (status: ConversionJob["status"]) => {
   switch (status) {
     case "pending":
-      return "Wartet auf Verarbeitung";
+      return "Waiting to be processed";
     case "processing":
-      return "Konvertierung laeuft";
+      return "Conversion in progress";
     case "completed":
-      return "Abgeschlossen";
+      return "Completed";
     case "failed":
-      return "Fehlgeschlagen";
+      return "Failed";
     case "cancelled":
-      return "Abgebrochen";
+      return "Cancelled";
     default:
       return status;
   }
@@ -84,16 +84,16 @@ const translateStatus = (status: ConversionJob["status"]) => {
 
 const renderSubtitle = (result: ConversionResult) => {
   if (result.status === "failed") {
-    return result.error ?? "Unbekannter Fehler";
+    return result.error ?? "Unknown error";
   }
   if (result.status === "completed") {
-    return "Bereit zum Download";
+    return "Ready to download";
   }
   if (result.status === "processing") {
-    return "Wird verarbeitet...";
+    return "Processing...";
   }
   if (result.status === "cancelled") {
-    return "Abgebrochen";
+    return "Cancelled";
   }
-  return "Steht in der Warteschlange";
+  return "Queued for processing";
 };

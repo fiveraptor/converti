@@ -11,15 +11,15 @@ interface JobHistoryProps {
 const statusLabel = (status: string) => {
   switch (status) {
     case "completed":
-      return "Abgeschlossen";
+      return "Completed";
     case "processing":
-      return "In Bearbeitung";
+      return "In progress";
     case "failed":
-      return "Fehlgeschlagen";
+      return "Failed";
     case "pending":
-      return "Wartend";
+      return "Pending";
     case "cancelled":
-      return "Abgebrochen";
+      return "Cancelled";
     default:
       return status;
   }
@@ -39,8 +39,7 @@ export const JobHistory = ({ history, onError }: JobHistoryProps) => {
       const blob = await api.downloadAll(jobId);
       triggerDownload(blob, `converti-${category}-${jobId}.zip`);
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Download fehlgeschlagen";
+      const message = error instanceof Error ? error.message : "Download failed.";
       onError?.(message);
     } finally {
       setBusyJob(null);
@@ -53,8 +52,7 @@ export const JobHistory = ({ history, onError }: JobHistoryProps) => {
       setBusyJob(jobId);
       await api.deleteJob(jobId);
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Aktion fehlgeschlagen";
+      const message = error instanceof Error ? error.message : "Action failed.";
       onError?.(message);
       setBusyJob(null);
       return;
@@ -69,10 +67,9 @@ export const JobHistory = ({ history, onError }: JobHistoryProps) => {
     <section className="history-section">
       <header className="history-header">
         <div>
-          <h2>Verlauf</h2>
+          <h2>History</h2>
           <p className="history-subtitle">
-            Zuletzt gestartete Konvertierungen. Daten werden lokal in deinem Browser
-            gespeichert.
+            Recently started conversions. Entries are stored locally in your browser.
           </p>
         </div>
         <div className="history-actions">
@@ -82,7 +79,7 @@ export const JobHistory = ({ history, onError }: JobHistoryProps) => {
               className="link-button"
               onClick={() => history.clearAll()}
             >
-              Verlauf leeren
+              Clear history
             </button>
           )}
           <button
@@ -96,33 +93,33 @@ export const JobHistory = ({ history, onError }: JobHistoryProps) => {
             }}
             disabled={busyJob === "refresh"}
           >
-            Aktualisieren
+            Refresh
           </button>
         </div>
       </header>
 
       {history.loading && !hasItems ? (
-        <p className="muted-text">Lade Verlauf...</p>
+        <p className="muted-text">Loading history...</p>
       ) : !hasItems ? (
-        <p className="muted-text">Noch keine Konvertierungen vorhanden.</p>
+        <p className="muted-text">No conversions yet.</p>
       ) : (
         <ul className="history-list">
           {history.items.map((item) => {
             const jobStatus = item.job?.status ?? "unknown";
             const isActive = jobStatus === "pending" || jobStatus === "processing";
-            const removeLabel = isActive ? "Abbrechen" : "Entfernen";
+            const removeLabel = isActive ? "Cancel" : "Remove";
 
             return (
               <li key={item.meta.jobId} className={`history-item ${jobStatus}`}>
                 <div className="history-primary">
                   <div className="history-title">
                     <strong>{item.meta.category.toUpperCase()}</strong>
-                    <span className="history-jobid">Job-ID: {item.meta.jobId}</span>
+                    <span className="history-jobid">Job ID: {item.meta.jobId}</span>
                   </div>
                   <div className="history-meta">
-                    <span>Ziel: {item.meta.targetFormat.toUpperCase()}</span>
+                    <span>Target: {item.meta.targetFormat.toUpperCase()}</span>
                     <span>
-                      Gestartet:{" "}
+                      Started:{" "}
                       {new Date(item.meta.addedAt).toLocaleString(undefined, {
                         dateStyle: "short",
                         timeStyle: "short",
@@ -149,8 +146,7 @@ export const JobHistory = ({ history, onError }: JobHistoryProps) => {
                   {item.job?.status === "completed" && (
                     <div className="history-results">
                       <p>
-                        {item.job.results.filter((result) => result.status === "completed").length}{" "}
-                        Dateien konvertiert.
+                        {item.job.results.filter((result) => result.status === "completed").length} files converted.
                       </p>
                     </div>
                   )}
@@ -163,7 +159,7 @@ export const JobHistory = ({ history, onError }: JobHistoryProps) => {
                       onClick={() => handleDownloadAll(item.meta.jobId, item.meta.category)}
                       disabled={busyJob === item.meta.jobId}
                     >
-                      Alle herunterladen
+                      Download all
                     </button>
                   )}
                   <button

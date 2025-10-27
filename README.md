@@ -1,41 +1,41 @@
-## Converti - Container Deployment
+# Converti - Container Deployment
 
 ![](images/screenshot_dashboard.png)
 
-### Schritt 1: Repository klonen
+## 1. Clone the repository
 
 ```bash
 git clone https://github.com/fiveraptor/converti.git
 cd converti
 ```
 
-### Schritt 2: Docker Compose ausfuehren
+## 2. Start with Docker Compose
 
 ```bash
 docker compose up -d
 ```
 
-Standardports:
+Default ports:
 
 - Frontend: http://localhost:8080
 - Backend API: http://localhost:8000/api
 
-Anpassungen nimmst du direkt in `docker-compose.yml` vor:
+Adjust settings directly in `docker-compose.yml`:
 
-- `ports:` - externe Ports aendern
-- `CONVERTI_ALLOWED_ORIGINS` - erlaubte Origins fuer CORS
-- `CONVERTI_JOB_RETENTION_DAYS` - automatische Aufraeumung alter Jobs (Standard 7 Tage)
-- `CONVERTI_JOB_STORAGE_DIR` - Pfad fuer temporaere Dateien
+- `ports` - expose different local ports
+- `CONVERTI_ALLOWED_ORIGINS` - allowed origins for CORS
+- `CONVERTI_JOB_RETENTION_DAYS` - automatic cleanup for expired jobs (default 7 days)
+- `CONVERTI_JOB_STORAGE_DIR` - location for temporary job data
 
-Stoppen kannst du die Container mit `docker compose down`. Jobdaten bleiben im Volume `backend_storage` erhalten. Fuer Updates genuegen `docker compose pull` und danach `docker compose up -d`.
+Stop the stack with `docker compose down`. Converted files persist in the `backend_storage` volume. To update the containers, run `docker compose pull` followed by `docker compose up -d`.
 
 ---
 
-## Fuer Entwickler
+## For developers
 
-Converti basiert auf FastAPI (Backend) und React/Vite (Frontend). Unterstuetzte Konvertierungen: Bilder (Pillow) sowie Audio/Video (FFmpeg). Der Browser speichert eine lokale Historie abgeschlossener Jobs.
+Converti is built with FastAPI (backend) and React/Vite (frontend). Supported conversions include images (Pillow) plus audio/video via FFmpeg. The browser keeps a local history of finished jobs.
 
-### Projektstruktur
+### Project layout
 
 ```
 converti/
@@ -59,9 +59,7 @@ converti/
 +- docker-compose.yml
 ```
 
-### Lokale Entwicklung
-
-#### Backend
+### Backend setup
 
 ```bash
 python -m venv .venv
@@ -70,9 +68,9 @@ pip install -r backend/requirements.txt
 uvicorn app.main:app --app-dir backend --reload --port 8000
 ```
 
-API: http://localhost:8000/api (Swagger unter `/docs`). FFmpeg muss lokal verfuegbar sein.
+API docs: http://localhost:8000/docs. FFmpeg must be available locally.
 
-#### Frontend
+### Frontend setup
 
 ```bash
 cd frontend
@@ -80,15 +78,15 @@ npm install
 npm run dev
 ```
 
-Dev-Server: http://localhost:5173. Setze `VITE_API_BASE_URL`, wenn ein anderer API-Endpunkt verwendet werden soll.
+Dev server: http://localhost:5173. Set `VITE_API_BASE_URL` if you rely on a custom backend URL.
 
-### Roadmap-Ideen
+### Roadmap ideas
 
-- Echtzeit-Progress via WebSockets/SSE
-- Weitere Converter (Archive etc.)
-- Authentifizierung & persistente Jobdatenbank
-- Worker-Queue fuer Skalierung
+- Real time progress via WebSockets or Server Sent Events
+- Additional converters (archives, documents, etc.)
+- Authentication and persistent job storage
+- Background worker queue for scaling out
 
-### Lizenz
+### License
 
-MIT - nutze Converti gerne als Basis fuer eigene Projekte.
+MIT – feel free to adapt Converti for your own projects.

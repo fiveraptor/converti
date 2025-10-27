@@ -3,23 +3,20 @@ import { JobHistory } from "../components/JobHistory";
 import { useCategories } from "../hooks/useCategories";
 import { useJobHistory } from "../hooks/useJobHistory";
 
-const CATEGORY_COPY: Record<
-  string,
-  { title: string; description: string; accent: string }
-> = {
+const CATEGORY_COPY: Record<string, { title: string; description: string; accent: string }> = {
   images: {
-    title: "Bilder",
-    description: "Optimieren und konvertieren von PNG, JPEG, WebP und mehr.",
+    title: "Images",
+    description: "Optimise and convert PNG, JPEG, WebP, and more.",
     accent: "linear-gradient(135deg, rgba(59,130,246,0.2), rgba(14,165,233,0.4))",
   },
   audio: {
     title: "Audio",
-    description: "Wandle Audioformate wie MP3, WAV oder AAC um.",
+    description: "Transcode audio formats such as MP3, WAV, or AAC.",
     accent: "linear-gradient(135deg, rgba(16,185,129,0.2), rgba(59,130,246,0.4))",
   },
   video: {
     title: "Video",
-    description: "Konvertiere Videos fuer jede Plattform, vom Handy bis 4K.",
+    description: "Convert video for any platform, from mobile to 4K.",
     accent: "linear-gradient(135deg, rgba(236,72,153,0.2), rgba(59,130,246,0.4))",
   },
 };
@@ -31,23 +28,23 @@ export const HomePage = () => {
   return (
     <div className="home-page">
       <section className="hero">
-        <span className="badge">Allround File Converter</span>
-        <h1>Dateien sekundenschnell umwandeln</h1>
+        <span className="badge">All round file converter</span>
+        <h1>Transform files in seconds</h1>
         <p>
-          Converti unterstuetzt Bilder, Audio und Video – einfach hochladen, Zielformat waehlen und
-          fertig. Keine Installation, moderne Oberflaeche, volle Kontrolle.
+          Converti supports images, audio, and video. Upload your files, choose a target format, and
+          let the platform handle the rest. No installation, modern UI, full control.
         </p>
       </section>
 
       <section className="category-grid">
-        {loading && <p>Lade verfügbare Kategorien…</p>}
+        {loading && <p>Loading available categories...</p>}
         {error && <p className="error-text">{error}</p>}
         {!loading &&
           categories &&
           Object.entries(categories).map(([key, formats]) => {
             const copy = CATEGORY_COPY[key] ?? {
               title: key,
-              description: "Konvertiere Dateien dieser Kategorie.",
+              description: "Convert the files that belong to this category.",
               accent: "linear-gradient(135deg, rgba(99,102,241,0.2), rgba(14,165,233,0.4))",
             };
             return (

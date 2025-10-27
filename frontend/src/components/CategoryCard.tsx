@@ -9,9 +9,9 @@ interface CategoryCardProps {
 }
 
 const ICON_MAP: Record<string, string> = {
-  images: "🖼️",
-  audio: "🎧",
-  video: "🎬",
+  images: "IMG",
+  audio: "AUD",
+  video: "VID",
 };
 
 export const CategoryCard = ({
@@ -24,7 +24,7 @@ export const CategoryCard = ({
   return (
     <Link to={`/convert/${category}`} className="category-card">
       <div className="category-icon" aria-hidden style={{ background: accent }}>
-        {ICON_MAP[category] ?? "📦"}
+        {ICON_MAP[category] ?? "FILE"}
       </div>
       <div className="category-content">
         <h3>{title}</h3>
@@ -38,8 +38,7 @@ export const CategoryCard = ({
           {formats.length > 4 && <span className="chip neutral">+{formats.length - 4}</span>}
         </div>
       </div>
-      <span className="category-cta">Konvertieren →</span>
+      <span className="category-cta">Convert</span>
     </Link>
   );
 };
-

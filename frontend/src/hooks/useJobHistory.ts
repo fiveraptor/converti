@@ -31,7 +31,7 @@ const readStorage = (): StoredJobMeta[] => {
       })
       .filter((item): item is StoredJobMeta => item !== null);
   } catch (error) {
-    console.warn("Konnte Job-Verlauf nicht lesen:", error);
+    console.warn("Could not read job history:", error);
     return [];
   }
 };
@@ -52,7 +52,7 @@ const writeStorage = (entries: StoredJobMeta[]) => {
       .slice(0, MAX_JOBS);
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(unique));
   } catch (error) {
-    console.warn("Konnte Job-Verlauf nicht speichern:", error);
+    console.warn("Could not persist job history:", error);
   }
 };
 
@@ -114,9 +114,9 @@ export const useJobHistory = (): JobHistoryState => {
         nextItems.push({ meta: updatedMeta, job });
       } else {
         const message =
-          result.reason instanceof Error ? result.reason.message : "Unbekannter Fehler";
+          result.reason instanceof Error ? result.reason.message : "Unknown error";
         if (message.toLowerCase().includes("not found")) {
-          // Job existiert nicht mehr -> aus Verlauf entfernen
+          // Job does not exist anymore -> drop from history
           return;
         }
         survivingMeta.push(meta);
@@ -208,4 +208,3 @@ export const useJobHistory = (): JobHistoryState => {
     refresh,
   };
 };
-

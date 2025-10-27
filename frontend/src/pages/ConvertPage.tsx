@@ -75,7 +75,7 @@ export const ConvertPage = () => {
         }
       } catch (err) {
         if (!cancelled) {
-          setUserError(err instanceof Error ? err.message : "Fehler beim Abrufen des Jobs");
+          setUserError(err instanceof Error ? err.message : "Failed to fetch job details.");
           setPolling(false);
         }
         return true;
@@ -105,7 +105,7 @@ export const ConvertPage = () => {
 
   useEffect(() => {
     if (uploadState.active) {
-      setGuardMessage("Aktuell laeuft noch ein Upload. Wirklich verlassen?");
+      setGuardMessage("An upload is still running. Do you really want to leave?");
     } else {
       setGuardMessage(null);
     }
@@ -142,11 +142,11 @@ export const ConvertPage = () => {
     event.preventDefault();
     if (!category) return;
     if (!files.length) {
-      setUserError("Bitte fuege mindestens eine Datei hinzu.");
+      setUserError("Please add at least one file.");
       return;
     }
     if (!targetFormat) {
-      setUserError("Bitte waehle ein Zielformat aus.");
+      setUserError("Please select a target format.");
       return;
     }
 
@@ -181,7 +181,7 @@ export const ConvertPage = () => {
       const initialJob = await api.fetchJob(id);
       setJob(initialJob);
     } catch (err) {
-      setUserError(err instanceof Error ? err.message : "Konvertierung fehlgeschlagen");
+      setUserError(err instanceof Error ? err.message : "Conversion failed.");
     } finally {
       setIsSubmitting(false);
       setUploadState((prev) => ({
@@ -199,7 +199,7 @@ export const ConvertPage = () => {
       const blob = await api.downloadAll(job.jobId);
       triggerDownload(blob, `converti-${job.category}-${job.jobId}.zip`);
     } catch (err) {
-      setUserError(err instanceof Error ? err.message : "Download fehlgeschlagen");
+      setUserError(err instanceof Error ? err.message : "Download failed.");
     }
   };
 
@@ -209,12 +209,12 @@ export const ConvertPage = () => {
       const blob = await api.downloadSingle(job.jobId, filename);
       triggerDownload(blob, filename);
     } catch (err) {
-      setUserError(err instanceof Error ? err.message : "Download fehlgeschlagen");
+      setUserError(err instanceof Error ? err.message : "Download failed.");
     }
   };
 
   if (loading && !categories) {
-    return <p>Lade Konverter...</p>;
+    return <p>Loading converters...</p>;
   }
 
   if (categoryError) {
@@ -222,7 +222,7 @@ export const ConvertPage = () => {
   }
 
   if (!category || !formats.length) {
-    return <p>Diese Kategorie ist aktuell nicht verfuegbar.</p>;
+    return <p>This category is currently unavailable.</p>;
   }
 
   const busy = isSubmitting || polling || uploadState.active;
@@ -232,14 +232,14 @@ export const ConvertPage = () => {
       <header className="convert-header">
         <h1>{titleByCategory(category)}</h1>
         <p>
-          Waehle deine Dateien und das gewuenschte Zielformat. Converti verarbeitet mehrere Dateien
-          nacheinander und informiert dich ueber den Fortschritt.
+          Select your files and target format. Converti processes multiple files in sequence and
+          keeps you informed about progress.
         </p>
       </header>
 
       <form className="convert-form" onSubmit={handleSubmit}>
         <label className="field">
-          <span>Zielformat</span>
+          <span>Target format</span>
           <select
             value={targetFormat}
             onChange={(event) => setTargetFormat(event.target.value)}
@@ -268,7 +268,7 @@ export const ConvertPage = () => {
 
         <div className="form-actions">
           <button className="primary-button" type="submit" disabled={busy || !files.length}>
-            {isSubmitting ? "Startet..." : "Konvertierung starten"}
+            {isSubmitting ? "Starting..." : "Start conversion"}
           </button>
           {files.length > 0 && (
             <button
@@ -277,7 +277,7 @@ export const ConvertPage = () => {
               onClick={() => setFiles([])}
               disabled={busy}
             >
-              Auswahl zuruecksetzen
+              Clear selection
             </button>
           )}
         </div>
@@ -298,11 +298,11 @@ export const ConvertPage = () => {
 const titleByCategory = (category: string) => {
   switch (category) {
     case "images":
-      return "Bilder konvertieren";
+      return "Convert images";
     case "audio":
-      return "Audio konvertieren";
+      return "Convert audio";
     case "video":
-      return "Videos konvertieren";
+      return "Convert video";
     default:
       return category;
   }
